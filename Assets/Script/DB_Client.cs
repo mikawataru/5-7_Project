@@ -2,28 +2,45 @@
 using System.Collections;
 
 public class DB_Client : MonoBehaviour {
-    private SqliteDatabase sqlDB = new SqliteDatabase("player_log.db");
-    private int Data_id;
-    private int Player_num, Chara_num;
+    public static int Player_num = 2;
 
-    DB_Client(int player_num, int chara_num){
-        Player_num = player_num;
-        Chara_num = chara_num;
+    void Start()
+    {
+        SqliteDatabase sqlDB = new SqliteDatabase("player_log.db");
+        #if UNITY_EDITOR
+            sqlDB.ExecuteNonQuery("delete from chara");
+        #endif
     }
 
-    public void afresh(){
-        string query = "insert chara(player, num) values({Player_num}, {Chara_num})";
+    public int get_chara_num(int player_id)//キャラデータ数取得
+    {
+        SqliteDatabase sqlDB = new SqliteDatabase("player_log.db");
+        string query = "select count(id) from chara where player = player_id";
+        query = query.Replace("player_id", player_id.ToString());
+        DataTable dataTable = sqlDB.ExecuteQuery(query);
+        int num = (int)dataTable[0]["count(id)"];
+        return num;
+    }
+
+    public int afresh(int player_id)//新規chara作成＆キャラID取得
+    {
+        SqliteDatabase sqlDB = new SqliteDatabase("player_log.db");
+        int chara_id = get_chara_num(player_id) + 1;
+        string query = "insert into chara(player, num) values(player_id, chara_id)";
+        query = query.Replace("player_id", player_id.ToString());
+        query = query.Replace("chara_id", chara_id.ToString());
         sqlDB.ExecuteNonQuery(query);
-        query = "select id from chara where player = {Player_num} and num = {Chara_num}";
-        DataTable dataTable = sqlDB.ExecuteQuery(query);
-        Data_id = (int)dataTable[0]["id"];
-        Debug.Log(Data_id);
+
+        return get_id(player_id, chara_id);
     }
 
-    public void begin(){
-        string query = "select id from chara where player = {Player_num} and num = {Phara_num}";
+    public int get_id(int player_id, int chara_id)//キャラID取得
+    {
+        SqliteDatabase sqlDB = new SqliteDatabase("player_log.db");
+        string query = "select id from chara where player = player_id and num = chara_id";
+        query = query.Replace("player_id",player_id.ToString());
+        query = query.Replace("chara_id", chara_id.ToString());
         DataTable dataTable = sqlDB.ExecuteQuery(query);
-        Data_id = (int)dataTable[0]["id"];
-        Debug.Log(Data_id);
+        return (int)dataTable[0]["id"];
     }
 }
