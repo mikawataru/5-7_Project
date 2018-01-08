@@ -6,7 +6,7 @@ using System;
 
 public class Chara_player : MonoBehaviour
 {
-    public Camera Camera;
+    public Camera Cam;
     GameObject Model;
     Animator Anim;
     enum MOVE : int { I = 0, F = 1, B = 2, R = 3, L = 4, FF = 5};
@@ -20,25 +20,30 @@ public class Chara_player : MonoBehaviour
     {
         Model = GameObject.FindGameObjectWithTag("Chara_model");
         Anim = Model.GetComponent<Animator>();
+//        Cam = GetComponent<Camera>();
         move = MOVE.I;
     }
 
     // Update is called once per frame
     void Update()
     {
-        float x = Input.GetAxis("GamePad1_Horizontal");
-        float y = Input.GetAxis("GamePad1_Vertical");
+        float l_x = Input.GetAxis("GamePad1_L_Stick_Horizontal");
+        float l_y = Input.GetAxis("GamePad1_L_Stick_Vertical");
+
+        float r_x = Input.GetAxis("GamePad1_R_Stick_Horizontal");
+        float r_y = Input.GetAxis("GamePad1_R_Stick_Vertical");
+
         float speed = Speed;
-                
-        if (x * x + y * y > 0.25)
+
+        if (l_x * l_x + l_y * l_y > 0.25)
         {
-            float dir = Mathf.Atan(y / x) * Mathf.Rad2Deg;
+            float dir = Mathf.Atan(l_y / l_x) * Mathf.Rad2Deg;
 
             if (Mathf.Abs(dir) >= 45)
             {
-                if (y > 0)
+                if (l_y > 0)
                 {
-                    if(y > 0.6)
+                    if(l_y > 0.6)
                     {
                         speed = Speed_fast;
                         Anim.SetInteger("Move", (int)MOVE.FF);
@@ -55,7 +60,7 @@ public class Chara_player : MonoBehaviour
             }
             else
             {
-                if (x > 0)
+                if (l_x > 0)
                 {
                     Anim.SetInteger("Move", (int)MOVE.R);
                 }
@@ -70,8 +75,22 @@ public class Chara_player : MonoBehaviour
         {
             Anim.SetInteger("Move", 0);
         }
+        
+        if (Mathf.Abs(r_x) > 0.2)
+        {
+            Vector3 axis = new Vector3(0f, 1, 0f);
+            transform.Rotate(axis, r_x);
+        }
 
-        transform.position += transform.forward * speed * y * Time.deltaTime;
-        transform.position += transform.right * Speed * x * Time.deltaTime;
+        if (Mathf.Abs(r_y) > 0.2)
+        {
+            Vector3 axis = new Vector3(1, 0, 0);
+            Cam.transform.Rotate(axis, r_y);
+        }
+
+        Debug.Log(r_y);
+
+        transform.position += transform.forward * speed * l_y * Time.deltaTime;
+        transform.position += transform.right * Speed * l_x * Time.deltaTime;
     }
 }
